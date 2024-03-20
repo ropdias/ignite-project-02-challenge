@@ -1,0 +1,21 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/build
+
+# env
+.env
+.env.test
+
+# images
+/images
+
+# data
+/data
+
+#db
+/db/*.db
