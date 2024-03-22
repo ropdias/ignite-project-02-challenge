@@ -8,6 +8,7 @@ declare module 'knex/types/tables' {
       name: string;
       email: string;
       created_at: string;
+      session_id?: string;
     };
   }
   export interface Meals {
