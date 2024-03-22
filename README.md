@@ -4,7 +4,7 @@ Daily Diet API.
 
 ## FRs (Functional Requirements)
 
-- [ ] It must be possible to register a user;
+- [x] It must be possible to register a user;
 - [ ] It must be possible for the user to register a meal eaten (the meal should be related to the user) with the information: name, description, date and time, whether it was in the daily diet or not;
 - [ ] It must be possible for the user to edit a meal;
 - [ ] It must be possible for the user to delete a meal;
