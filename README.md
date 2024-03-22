@@ -24,5 +24,5 @@ Daily Diet API.
 
 ## NFR (Non-functional requirements)
 
-- [ ] Application data must be persisted in a SQLite database using a SQL Query Builder (Knex);
+- [x] Application data must be persisted in a SQLite database using a SQL Query Builder (Knex);
 - [ ] It must be possible to identify a user between requests;

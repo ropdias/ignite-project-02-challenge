@@ -10,4 +10,15 @@ declare module 'knex/types/tables' {
       created_at: string;
     };
   }
+  export interface Meals {
+    users: {
+      id: string;
+      user_id: string;
+      name: string;
+      description: string;
+      date_and_time: string;
+      was_on_daily_diet: boolean;
+      created_at: string;
+    };
+  }
 }
