@@ -4,12 +4,20 @@ import { randomUUID } from 'node:crypto';
 import { knex } from '../database';
 
 export async function usersRoutes(app: FastifyInstance) {
-  app.post('/sessions', async (request, reply) => {
+  app.post('/session', async (request, reply) => {
     const authenticateBodySchema = z.object({
       email: z.string().email(),
     });
 
     const { email } = authenticateBodySchema.parse(request.body);
+
+    const user = await knex('users').where('email', email).first();
+
+    if (!user) {
+      return reply.status(401).send({
+        error: 'Unauthorized.',
+      });
+    }
 
     const sessionId = randomUUID();
 
@@ -25,7 +33,7 @@ export async function usersRoutes(app: FastifyInstance) {
       .send();
   });
 
-  app.post('/register', async (request, reply) => {
+  app.post('/', async (request, reply) => {
     const createUserBodySchema = z.object({
       name: z.string(),
       email: z.string().email(),
@@ -41,4 +49,6 @@ export async function usersRoutes(app: FastifyInstance) {
 
     return reply.status(201).send();
   });
+
+ 
 }

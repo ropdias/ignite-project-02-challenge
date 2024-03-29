@@ -10,9 +10,7 @@ declare module 'knex/types/tables' {
       created_at: string;
       session_id?: string;
     };
-  }
-  export interface Meals {
-    users: {
+    meals: {
       id: string;
       user_id: string;
       name: string;
