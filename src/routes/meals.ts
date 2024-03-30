@@ -148,7 +148,7 @@ export async function mealsRoutes(app: FastifyInstance) {
 
       const meals = await knex('meals').where('user_id', user.id).select();
 
-      return reply.status(200).send(meals);
+      return reply.status(200).send({ meals });
     }
   );
 
@@ -174,7 +174,7 @@ export async function mealsRoutes(app: FastifyInstance) {
 
       const meal = await knex('meals').where({ user_id: user.id, id }).first();
 
-      return reply.status(200).send(meal);
+      return reply.status(200).send({ meal });
     }
   );
 }
