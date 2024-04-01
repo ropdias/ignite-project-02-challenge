@@ -230,5 +230,144 @@ describe('Meals routes', () => {
     expect(mealsResponseAfterDelete.body.meals).toHaveLength(0);
   });
 
-  // Make test to edit a meal
+  it('should be able to edit a specific meal', async () => {
+    await request(app.server)
+      .post('/users')
+      .send({
+        name: 'Rodrigo P. Dias',
+        email: 'rodrigo@test.com',
+      })
+      .expect(201);
+
+    const authenticateResponse = await request(app.server)
+      .post('/users/session')
+      .send({
+        email: 'rodrigo@test.com',
+      })
+      .expect(200);
+
+    const cookies = authenticateResponse.get('Set-Cookie');
+
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', cookies)
+      .send({
+        name: 'Meal 1',
+        description: 'This is meal 1',
+        date_and_time: Date.now().toString(),
+        was_on_daily_diet: true,
+      })
+      .expect(201);
+
+    const mealsResponse = await request(app.server)
+      .get('/meals')
+      .set('Cookie', cookies)
+      .expect(200);
+
+    const mealId = mealsResponse.body.meals[0].id;
+
+    await request(app.server)
+      .put('/meals')
+      .set('Cookie', cookies)
+      .send({
+        id: mealId,
+        name: 'Meal 2',
+        description: 'This is meal 2',
+        date_and_time: '123',
+        was_on_daily_diet: false,
+      })
+      .expect(204);
+
+    const mealsResponseAfterEdit = await request(app.server)
+      .get('/meals')
+      .set('Cookie', cookies)
+      .expect(200);
+
+    expect(mealsResponseAfterEdit.body.meals[0]).toEqual(
+      expect.objectContaining({
+        id: mealId,
+        name: 'Meal 2',
+        description: 'This is meal 2',
+        date_and_time: '123',
+        was_on_daily_diet: false
+      })
+    );
+  });
+  
+  it('should be able to get metrics', async () => {
+    await request(app.server)
+      .post('/users')
+      .send({
+        name: 'Rodrigo P. Dias',
+        email: 'rodrigo@test.com',
+      })
+      .expect(201);
+
+    const authenticateResponse = await request(app.server)
+      .post('/users/session')
+      .send({
+        email: 'rodrigo@test.com',
+      })
+      .expect(200);
+
+    const cookies = authenticateResponse.get('Set-Cookie');
+
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', cookies)
+      .send({
+        name: 'Meal 1',
+        description: 'This is meal 1',
+        date_and_time: Date.now().toString(),
+        was_on_daily_diet: true,
+      })
+      .expect(201);
+
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', cookies)
+      .send({
+        name: 'Meal 2',
+        description: 'This is meal 2',
+        date_and_time: Date.now().toString(),
+        was_on_daily_diet: true,
+      })
+      .expect(201);
+
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', cookies)
+      .send({
+        name: 'Meal 3',
+        description: 'This is meal 3',
+        date_and_time: Date.now().toString(),
+        was_on_daily_diet: false,
+      })
+      .expect(201);
+    
+    await request(app.server)
+      .post('/meals')
+      .set('Cookie', cookies)
+      .send({
+        name: 'Meal 4',
+        description: 'This is meal 4',
+        date_and_time: Date.now().toString(),
+        was_on_daily_diet: true,
+      })
+      .expect(201);
+
+    const metricsResponse = await request(app.server)
+      .get('/meals/metrics')
+      .set('Cookie', cookies)
+      .expect(200);
+
+    expect(metricsResponse.body).toEqual(
+      expect.objectContaining({
+        totalNumberOfMeals: 4,
+        mealsInsideTheDailyDiet: 3,
+        mealsOutsideTheDailyDiet: 1,
+        betterSequenceInsideDailyDiet: 2
+      })
+    );
+  });
 });

@@ -177,4 +177,48 @@ export async function mealsRoutes(app: FastifyInstance) {
       return reply.status(200).send({ meal });
     }
   );
+
+  app.get(
+    '/metrics',
+    { preHandler: [checkSessionIdExists] },
+    async (request, reply) => {
+      const { sessionId } = request.cookies;
+
+      const user = await knex('users').where('session_id', sessionId).first();
+
+      if (!user) {
+        return reply.status(401).send({
+          error: 'Unauthorized.',
+        });
+      }
+
+      const meals = await knex('meals').where('user_id', user.id).select();
+
+      totalNumberOfMeals = meals.length
+      mealsInsideTheDailyDiet = 0
+      mealsOutsideTheDailyDiet = 0
+      betterSequenceInsideDailyDiet = 0
+      currentSequenceInsideDailyDiet = 0
+
+      meals.forEach((meal) => {
+        if(meal.was_on_daily_diet) {
+          mealsInsideTheDailyDiet++;
+          currentSequenceInsideDailyDiet++;
+        } else {
+          mealsOutsideTheDailyDiet++;
+          if (currentSequenceInsideDailyDiet > betterSequenceInsideDailyDiet) {
+            betterSequenceInsideDailyDiet = currentSequenceInsideDailyDiet;
+          }
+          currentSequenceInsideDailyDiet = 0;
+        }
+      })
+      
+      return reply.status(200).send({ 
+        totalNumberOfMeals,
+        mealsInsideTheDailyDiet,
+        mealsOutsideTheDailyDiet,
+        betterSequenceInsideDailyDiet
+      });
+    }
+  );
 }

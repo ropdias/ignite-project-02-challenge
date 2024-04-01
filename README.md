@@ -10,11 +10,11 @@ Daily Diet API.
 - [x] It must be possible for the user to delete a meal;
 - [x] It must be possible to get all the meals from a user;
 - [x] It must be possible for the user to get the information from a meal;
-- [ ] It must be possible to get the metrics of a user:
-  - [ ] Total number of meals registered;
-  - [ ] Total number of meals inside the daily diet;
-  - [ ] Total number of meals outside the daily diet;
-  - [ ] Better sequence of meals inside the daily diet;
+- [x] It must be possible to get the metrics of a user:
+  - [x] Total number of meals registered;
+  - [x] Total number of meals inside the daily diet;
+  - [x] Total number of meals outside the daily diet;
+  - [x] Better sequence of meals inside the daily diet;
 
 ## BR (Business Requirements)
 
