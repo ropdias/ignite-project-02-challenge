@@ -194,14 +194,14 @@ export async function mealsRoutes(app: FastifyInstance) {
 
       const meals = await knex('meals').where('user_id', user.id).select();
 
-      totalNumberOfMeals = meals.length
-      mealsInsideTheDailyDiet = 0
-      mealsOutsideTheDailyDiet = 0
-      betterSequenceInsideDailyDiet = 0
-      currentSequenceInsideDailyDiet = 0
+      const totalNumberOfMeals = meals.length;
+      let mealsInsideTheDailyDiet = 0;
+      let mealsOutsideTheDailyDiet = 0;
+      let betterSequenceInsideDailyDiet = 0;
+      let currentSequenceInsideDailyDiet = 0;
 
       meals.forEach((meal) => {
-        if(meal.was_on_daily_diet) {
+        if (meal.was_on_daily_diet) {
           mealsInsideTheDailyDiet++;
           currentSequenceInsideDailyDiet++;
         } else {
@@ -211,13 +211,13 @@ export async function mealsRoutes(app: FastifyInstance) {
           }
           currentSequenceInsideDailyDiet = 0;
         }
-      })
-      
-      return reply.status(200).send({ 
+      });
+
+      return reply.status(200).send({
         totalNumberOfMeals,
         mealsInsideTheDailyDiet,
         mealsOutsideTheDailyDiet,
-        betterSequenceInsideDailyDiet
+        betterSequenceInsideDailyDiet,
       });
     }
   );

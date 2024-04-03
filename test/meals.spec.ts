@@ -289,11 +289,11 @@ describe('Meals routes', () => {
         name: 'Meal 2',
         description: 'This is meal 2',
         date_and_time: '123',
-        was_on_daily_diet: false
+        was_on_daily_diet: 0,
       })
     );
   });
-  
+
   it('should be able to get metrics', async () => {
     await request(app.server)
       .post('/users')
@@ -344,7 +344,7 @@ describe('Meals routes', () => {
         was_on_daily_diet: false,
       })
       .expect(201);
-    
+
     await request(app.server)
       .post('/meals')
       .set('Cookie', cookies)
@@ -366,7 +366,7 @@ describe('Meals routes', () => {
         totalNumberOfMeals: 4,
         mealsInsideTheDailyDiet: 3,
         mealsOutsideTheDailyDiet: 1,
-        betterSequenceInsideDailyDiet: 2
+        betterSequenceInsideDailyDiet: 2,
       })
     );
   });
