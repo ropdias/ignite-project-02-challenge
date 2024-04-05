@@ -12,30 +12,20 @@ export async function mealsRoutes(app: FastifyInstance) {
       const createMealBodySchema = z.object({
         name: z.string(),
         description: z.string(),
-        date_and_time: z.string(),
-        was_on_daily_diet: z.boolean(),
+        date: z.coerce.date(),
+        isOnDailyDiet: z.boolean(),
       });
 
-      const { name, description, date_and_time, was_on_daily_diet } =
+      const { name, description, date, isOnDailyDiet } =
         createMealBodySchema.parse(request.body);
-
-      const { sessionId } = request.cookies;
-
-      const user = await knex('users').where('session_id', sessionId).first();
-
-      if (!user) {
-        return reply.status(401).send({
-          error: 'Unauthorized.',
-        });
-      }
 
       await knex('meals').insert({
         id: randomUUID(),
-        user_id: user.id,
+        user_id: request.user?.id,
         name,
         description,
-        date_and_time,
-        was_on_daily_diet,
+        date: date.getTime(),
+        is_on_daily_diet: isOnDailyDiet,
       });
 
       return reply.status(201).send();
@@ -43,39 +33,32 @@ export async function mealsRoutes(app: FastifyInstance) {
   );
 
   app.put(
-    '/',
+    '/:id',
     { preHandler: [checkSessionIdExists] },
     async (request, reply) => {
-      const editMealBodySchema = z.object({
+      const editMealParamsSchema = z.object({
         id: z.string().uuid(),
-        name: z.string(),
-        description: z.string(),
-        date_and_time: z.string(),
-        was_on_daily_diet: z.boolean(),
       });
 
-      const { id, name, description, date_and_time, was_on_daily_diet } =
+      const { id } = editMealParamsSchema.parse(request.params);
+
+      const editMealBodySchema = z.object({
+        name: z.string(),
+        description: z.string(),
+        date: z.coerce.date(),
+        isOnDailyDiet: z.boolean(),
+      });
+
+      const { name, description, date, isOnDailyDiet } =
         editMealBodySchema.parse(request.body);
-
-      const { sessionId } = request.cookies;
-
-      const user = await knex('users').where('session_id', sessionId).first();
-
-      if (!user) {
-        return reply.status(401).send({
-          error: 'Unauthorized.',
-        });
-      }
 
       const meal = await knex('meals').where('id', id).first();
 
       if (!meal) {
-        return reply.status(404).send({
-          error: 'Meal do not exist.',
-        });
+        return reply.status(404).send({ error: 'Meal not found' });
       }
 
-      if (meal.user_id !== user.id) {
+      if (meal.user_id !== request.user?.id) {
         return reply.status(401).send({
           error: 'Unauthorized.',
         });
@@ -84,8 +67,8 @@ export async function mealsRoutes(app: FastifyInstance) {
       await knex('meals').where('id', id).update({
         name,
         description,
-        date_and_time,
-        was_on_daily_diet,
+        date: date.getTime(),
+        is_on_daily_diet: isOnDailyDiet,
       });
 
       return reply.status(204).send();
@@ -102,25 +85,13 @@ export async function mealsRoutes(app: FastifyInstance) {
 
       const { id } = deleteMealParamsSchema.parse(request.params);
 
-      const { sessionId } = request.cookies;
-
-      const user = await knex('users').where('session_id', sessionId).first();
-
-      if (!user) {
-        return reply.status(401).send({
-          error: 'Unauthorized.',
-        });
-      }
-
       const meal = await knex('meals').where('id', id).first();
 
       if (!meal) {
-        return reply.status(404).send({
-          error: 'Meal do not exist.',
-        });
+        return reply.status(404).send({ error: 'Meal not found' });
       }
 
-      if (meal.user_id !== user.id) {
+      if (meal.user_id !== request.user?.id) {
         return reply.status(401).send({
           error: 'Unauthorized.',
         });
@@ -136,17 +107,9 @@ export async function mealsRoutes(app: FastifyInstance) {
     '/',
     { preHandler: [checkSessionIdExists] },
     async (request, reply) => {
-      const { sessionId } = request.cookies;
-
-      const user = await knex('users').where('session_id', sessionId).first();
-
-      if (!user) {
-        return reply.status(401).send({
-          error: 'Unauthorized.',
-        });
-      }
-
-      const meals = await knex('meals').where('user_id', user.id).select();
+      const meals = await knex('meals')
+        .where('user_id', request.user?.id)
+        .orderBy('date', 'desc');
 
       return reply.status(200).send({ meals });
     }
@@ -162,17 +125,13 @@ export async function mealsRoutes(app: FastifyInstance) {
 
       const { id } = getMealParamsSchema.parse(request.params);
 
-      const { sessionId } = request.cookies;
+      const meal = await knex('meals')
+        .where({ user_id: request.user?.id, id })
+        .first();
 
-      const user = await knex('users').where('session_id', sessionId).first();
-
-      if (!user) {
-        return reply.status(401).send({
-          error: 'Unauthorized.',
-        });
+      if (!meal) {
+        return reply.status(404).send({ error: 'Meal not found' });
       }
-
-      const meal = await knex('meals').where({ user_id: user.id, id }).first();
 
       return reply.status(200).send({ meal });
     }
@@ -182,17 +141,9 @@ export async function mealsRoutes(app: FastifyInstance) {
     '/metrics',
     { preHandler: [checkSessionIdExists] },
     async (request, reply) => {
-      const { sessionId } = request.cookies;
-
-      const user = await knex('users').where('session_id', sessionId).first();
-
-      if (!user) {
-        return reply.status(401).send({
-          error: 'Unauthorized.',
-        });
-      }
-
-      const meals = await knex('meals').where('user_id', user.id).select();
+      const meals = await knex('meals')
+        .where('user_id', request.user?.id)
+        .select();
 
       const totalNumberOfMeals = meals.length;
       let mealsInsideTheDailyDiet = 0;
@@ -201,7 +152,7 @@ export async function mealsRoutes(app: FastifyInstance) {
       let currentSequenceInsideDailyDiet = 0;
 
       meals.forEach((meal) => {
-        if (meal.was_on_daily_diet) {
+        if (meal.is_on_daily_diet) {
           mealsInsideTheDailyDiet++;
           currentSequenceInsideDailyDiet++;
         } else {
