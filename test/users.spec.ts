@@ -48,7 +48,9 @@ describe('Users routes', () => {
 
     const cookies = authenticateResponse.get('Set-Cookie');
 
-    expect(cookies[0]).toContain('sessionId=');
+    expect(cookies).toEqual(
+      expect.arrayContaining([expect.stringContaining('sessionId')])
+    );
   });
 
   it('should not be able to authenticate with an invalid email', async () => {

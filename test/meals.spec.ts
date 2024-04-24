@@ -26,8 +26,8 @@ describe('Meals routes', () => {
       .send({
         name: 'Meal 1',
         description: 'This is meal 1',
-        date_and_time: Date.now().toString(),
-        was_on_daily_diet: true,
+        date: new Date(),
+        isOnDailyDiet: true,
       })
       .expect(401);
   });
@@ -39,8 +39,8 @@ describe('Meals routes', () => {
       .send({
         name: 'Meal 1',
         description: 'This is meal 1',
-        date_and_time: Date.now().toString(),
-        was_on_daily_diet: true,
+        date: new Date(),
+        isOnDailyDiet: true,
       })
       .expect(401);
   });
@@ -69,7 +69,7 @@ describe('Meals routes', () => {
       .send({
         name: 'Meal 1',
         description: 'This is meal 1',
-        date: Date.now(),
+        date: new Date(),
         isOnDailyDiet: true,
       })
       .expect(201);
@@ -99,7 +99,7 @@ describe('Meals routes', () => {
       .send({
         name: 'Meal 1',
         description: 'This is meal 1',
-        date: Date.now(),
+        date: new Date(),
         isOnDailyDiet: true,
       })
       .expect(201);
@@ -110,7 +110,7 @@ describe('Meals routes', () => {
       .send({
         name: 'Meal 2',
         description: 'This is meal 2',
-        date: Date.now(),
+        date: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day after
         isOnDailyDiet: false,
       })
       .expect(201);
@@ -120,8 +120,9 @@ describe('Meals routes', () => {
       .set('Cookie', cookies)
       .expect(200);
 
-    console.log(mealsResponse.body.meals);
-
+    expect(mealsResponse.body.meals).toHaveLength(2);
+    expect(mealsResponse.body.meals[0].name).toBe('Meal 2');
+    expect(mealsResponse.body.meals[1].name).toBe('Meal 1');
     expect(mealsResponse.body.meals).toEqual([
       expect.objectContaining({
         name: 'Meal 2',
@@ -184,6 +185,7 @@ describe('Meals routes', () => {
         name: 'Meal 1',
         description: 'This is meal 1',
         date: expect.any(Number),
+        is_on_daily_diet: 1,
       })
     );
   });
